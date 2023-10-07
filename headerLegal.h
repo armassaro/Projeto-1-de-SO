@@ -13,13 +13,14 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-typedef enum {executing, ready, waiting}ProcessStatus;
+typedef enum {executing, ready, waiting, completed}ProcessStatus;
 
 typedef struct {
 
-    char *letter;
-    int *processTime;
-    int *processDuration;
+    char letter;
+    int arrivalTime;
+    int processDuration;
+    int processTime;
     int processStatus;
 
 }Process;
@@ -29,7 +30,6 @@ void printFirstAnimation(int yTerminal, int xTerminal);
 void enterFolderName(int yTerminal, int xTerminal);
 void changeMainWindow(char *title);
 void processManagement();
-Process *readArchiveData();
 
 //variables
 int auxIntReading;
@@ -41,7 +41,6 @@ WINDOW *shadowBox;
 WINDOW *inputInfo;
 int yinputInfo, xinputInfo;
 FILE *archive;
-__pid_t programPID;
 
 //color pairs info
 // COLOR_PAIR(1) = blue text, blue screen = terminal colors

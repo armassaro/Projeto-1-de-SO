@@ -60,7 +60,7 @@ void enterFolderName(int yTerminal, int xTerminal) {
         
         wgetnstr(inputInfo, archiveName, 35);
 
-        archive = fopen(archiveName, "rb");
+        archive = fopen(archiveName, "r");
 
         if(strcmp(archiveName, "parar") == 0) {
 
@@ -102,77 +102,99 @@ void enterFolderName(int yTerminal, int xTerminal) {
 
 }
 
-Process *readArchiveData() {
-    
-    Process *process = (Process*) malloc(sizeof(Process));
+void processManagement() {
+
+    Process *process = NULL;
+    int timePassed = 0;
+    int timeMax = 0;
+
+    changeMainWindow("| Gerenciamento de processos SJF |");
+
+    process = (Process*) malloc(sizeof(Process));
     auxIntReading = 0;
-aa
+
     while(feof(archive) == 0) {
 
-        fread(process[auxIntReading].letter, sizeof(char), 1, archive);
-        fread(process[auxIntReading].processDuration, sizeof(int), 1, archive);
-        fread(process[auxIntReading].processTime, sizeof(int), 1, archive);
+        fscanf(archive, "%c ", &process[auxIntReading].letter);
+        fscanf(archive, "%i ", &process[auxIntReading].arrivalTime);
+        fscanf(archive, "%i\n", &process[auxIntReading].processDuration);
+        timeMax = timeMax + process[auxIntReading].processDuration;
 
         process[auxIntReading].processStatus = ready;
 
         auxIntReading++;
 
-        process = (Process*) realloc(process, sizeof(Process) * (auxIntReading));
+        process = (Process*) realloc(process, sizeof(Process) * (auxIntReading + 1));
 
     }
 
-    auxIntReading--;
+    int shortestJobTime = 99999;
 
-    return (Process*) realloc(process, sizeof(Process) * (auxIntReading));
- 
-}
+    for(timePassed = 0; timePassed <= timeMax; timePassed++) {
 
-void processManagement() {
+        for(int a = 0; a < auxIntReading; a++) {
+            
+            for(int b = 0; b < auxIntReading; b++) {
 
-    int asciiChar;
-    Process *process;
+                if(process[b].processStatus != completed && process[b].arrivalTime <= timePassed && process[b].processDuration < shortestJobTime) {
 
-    init_pair(4, COLOR_WHITE, COLOR_GREEN); //executing status
-    init_pair(5, COLOR_WHITE, COLOR_YELLOW);  //ready status
-    init_pair(6, COLOR_WHITE, COLOR_RED); //waiting status
+                    shortestJobTime = process[b].processDuration;
+                    process[b].processStatus = executing;
 
-    changeMainWindow("| Gerenciamento de processos SJF |");
+                }
 
-    mvwprintw(mainWindow, ymainWindow - 2, 1, "Número de processo do programa: %i", programPID);
-    wrefresh(mainWindow);
+            }
 
-    process = readArchiveData();
+            if(shortestJobTime == -1) {
 
-    for(int a = 0; a < auxIntReading; a++) {
-        
-        asciiChar = 196 + '0';
-        mvwprintw(mainWindow, 2 + a, 4, "[%c] %d Tempo restante: %i | ", process[a].letter, &asciiChar, process[a].processDuration);
-        switch(process[a].processStatus) {
+                timePassed++;
 
-            case executing:
-            attron(COLOR_PAIR(4));
-            wprintw(mainWindow, "Executando");
-            attroff(COLOR_PAIR(4));
-            break;
+            }
 
-            case ready:
-            attron(COLOR_PAIR(5));
-            wprintw(mainWindow, "Pronto");
-            attroff(COLOR_PAIR(5));
-            break;
+            if(process[a].processStatus == executing && process[a].processDuration > 0) {
 
-            case waiting:
-            attron(COLOR_PAIR(6));
-            wprintw(mainWindow, "Em espera");
-            attroff(COLOR_PAIR(6));
-            break;
+                process[a].processTime--;
+
+            }
+
+            if(process[a].processTime == 0) {
+
+                process[a].processStatus = completed;
+
+            }
+
+            mvwprintw(mainWindow, 2 + a, 4, "[%c] -> Tempo restante: %i | Tempo de entrada %i | ", process[a].letter, process[a].processDuration, process[a].arrivalTime);
+            
+            switch(process[a].processStatus) {
+
+                case executing:
+                wprintw(mainWindow, "Executando");
+                break;
+
+                case ready:
+                wprintw(mainWindow, "Pronto");
+                break;
+
+                case waiting:
+                wprintw(mainWindow, "Em espera");
+                break;
+
+                case completed:
+                wprintw(mainWindow, "Completo  ");
+                break;
+                
+            }
+
+            mvwprintw(mainWindow, ymainWindow / 2, (xmainWindow / 2) + ((xmainWindow / 2) - strlen("Tempo restante: ") - 10), "Tempo restante: ");
+            wprintw(mainWindow, "%i", timePassed);
             
         }
-        asciiChar = 192 + '0';
-        mvwprintw(mainWindow, 3 + a, 4, " %d Tempo de entrada: %i", &asciiChar, process[a].processTime);
         
+        wrefresh(mainWindow);
+
+        napms(1000);
+
     }
-    wrefresh(mainWindow);
 
 }
 
@@ -196,8 +218,6 @@ int main() {
     curs_set(FALSE);  //desabilita a visualização do cursor dentro do temrinal
     start_color();
     setlocale(LC_ALL, "");
-    
-    programPID = getpid();
 
     getmaxyx(stdscr, yTerminal, xTerminal);
 
