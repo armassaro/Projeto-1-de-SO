@@ -1,0 +1,23 @@
+Arthur Romano Massaro
+2478374
+1) select * from medicos
+2) select nome, especialidade from medicos
+3) select cpf, nome from medicos where idade = 51
+4) select cpf, nome from medicos where idade = 40 or idade = 51
+5) select cpf, nome from medicos where idade = 40 and nome != 'alex'
+6) select idade, nome from pacientes where cidade != 'biguacu'
+7) select cidade, nome, especialidade from medicos where cidade != 'Florianopolis' and especialidade = 'ortopedia'
+8) select cidade, nome, especialidade from medicos where cidade != 'Florianopolis' or especialidade = 'ortopedia'
+9) select nome, idade from pacientes where idade > 27 and idade < 50
+10) select avg(salario) from funcionarios;
+11) select avg(salario) from funcionarios order by cidade;
+12) select count(*) as TOTAL from consultas;
+13) select count(*) as CONSULTAS_MEDICO_2 from consultas where codm = 2;
+14) select count(*) as 'Total_Consultas', nome as 'Nome_Paciente' from Pacientes GROUP by nome;
+15) select codp as 'Cod_Paciente', count(*) as 'Num_Consultas' from pacientes group by codp;
+16) select codp as 'Cod_Paciente', count(*) as 'Num_Consultas' from pacientes group by codp;
+17) select codp as 'Cod_Paciente', count(*) as 'Num_Consultas' from pacientes GROUP BY codp ORDER by count(*) DESC;
+18) select nome, cpf from Medicos INTERSECT SELECT nome, cpf from Pacientes;
+19) SELECT codf, nome_func, cidade_Func from Funcionarios F inner join Medicos M on F.cidade_func = M.cidade;
+20) select nome, codp from Pacientes join Consultas on Consultas.hora > 14;
+21) select Ambulatorios.nroa, Ambulatorios.andar from Ambulatorios join Medicos on Medicos.especialidade = 'ortopedia';

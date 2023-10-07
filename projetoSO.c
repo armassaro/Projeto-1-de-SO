@@ -106,7 +106,7 @@ Process *readArchiveData() {
     
     Process *process = (Process*) malloc(sizeof(Process));
     auxIntReading = 0;
-
+aa
     while(feof(archive) == 0) {
 
         fread(process[auxIntReading].letter, sizeof(char), 1, archive);
