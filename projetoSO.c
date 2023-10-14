@@ -129,41 +129,33 @@ void processManagement() {
     }
 
     int shortestJobTime = 99999;
+    int shortestJobID = -1;
 
     for(timePassed = 0; timePassed <= timeMax; timePassed++) {
 
-        for(int a = 0; a < auxIntReading; a++) {
+        for(int a = 0; a < auxIntReading; a++) {  //checa todos os processos a cada segundo
             
-            for(int b = 0; b < auxIntReading; b++) {
+            if(process[a].processStatus != completed && process[a].arrivalTime <= timePassed && process[a].processDuration < shortestJobTime) {  //decide qual processo será executado
 
-                if(process[b].processStatus != completed && process[b].arrivalTime <= timePassed && process[b].processDuration < shortestJobTime) {
+                shortestJobID = a;
+                process[a].processStatus = executing;
+                shortestJobTime = process[a].processDuration;
+                process[a].processStatus = waiting;
 
-                    shortestJobTime = process[b].processDuration;
-                    process[b].processStatus = executing;
+                if(process[a].processDuration <= 0) {
+
+                    process[a].processStatus = completed;
+                    process[a].processDuration = 0;
+                    shortestJobTime = 99999;
+                    shortestJobID = -1;
 
                 }
 
-            }
-
-            if(shortestJobTime == -1) {
-
-                timePassed++;
+                process[a].processDuration--;
 
             }
 
-            if(process[a].processStatus == executing && process[a].processDuration > 0) {
-
-                process[a].processTime--;
-
-            }
-
-            if(process[a].processTime == 0) {
-
-                process[a].processStatus = completed;
-
-            }
-
-            mvwprintw(mainWindow, 2 + a, 4, "[%c] -> Tempo restante: %i | Tempo de entrada %i | ", process[a].letter, process[a].processDuration, process[a].arrivalTime);
+            mvwprintw(mainWindow, 2 + a, 4, "[%c] -> Tempo de entrada %i | Duração %i ", process[a].letter, process[a].arrivalTime, process[a].processDuration);
             
             switch(process[a].processStatus) {
 
@@ -172,11 +164,11 @@ void processManagement() {
                 break;
 
                 case ready:
-                wprintw(mainWindow, "Pronto");
+                wprintw(mainWindow, "Pronto    ");
                 break;
 
                 case waiting:
-                wprintw(mainWindow, "Em espera");
+                wprintw(mainWindow, "Em espera ");
                 break;
 
                 case completed:
@@ -185,18 +177,19 @@ void processManagement() {
                 
             }
 
+            wrefresh(mainWindow);
+
+        }
+
+            napms(1000);
             mvwprintw(mainWindow, ymainWindow / 2, (xmainWindow / 2) + ((xmainWindow / 2) - strlen("Tempo restante: ") - 10), "Tempo restante: ");
             wprintw(mainWindow, "%i", timePassed);
-            
-        }
-        
-        wrefresh(mainWindow);
-
-        napms(1000);
+            wrefresh(mainWindow);
 
     }
 
-}
+}  
+
 
 void changeMainWindow(char *title) {
 

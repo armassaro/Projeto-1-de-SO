@@ -20,7 +20,6 @@ typedef struct {
     char letter;
     int arrivalTime;
     int processDuration;
-    int processTime;
     int processStatus;
 
 }Process;
