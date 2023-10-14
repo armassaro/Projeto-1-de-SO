@@ -129,29 +129,28 @@ void processManagement() {
     }
 
     int shortestJobTime = 99999;
-    int shortestJobID = -1;
+    int shortestJobID;
+    timePassed = 0;
 
-    for(timePassed = 0; timePassed <= timeMax; timePassed++) {
+    while(timePassed <= timeMax) {
 
         for(int a = 0; a < auxIntReading; a++) {  //checa todos os processos a cada segundo
             
             if(process[a].processStatus != completed && process[a].arrivalTime <= timePassed && process[a].processDuration < shortestJobTime) {  //decide qual processo será executado
 
-                shortestJobID = a;
                 process[a].processStatus = executing;
                 shortestJobTime = process[a].processDuration;
-                process[a].processStatus = waiting;
+                process[shortestJobID].processStatus = waiting;
 
-                if(process[a].processDuration <= 0) {
+                shortestJobID = a;
 
-                    process[a].processStatus = completed;
-                    process[a].processDuration = 0;
-                    shortestJobTime = 99999;
-                    shortestJobID = -1;
+            }
 
-                }
+            if(process[a].processDuration <= 0 && process[a].processStatus != completed) {
 
-                process[a].processDuration--;
+                process[a].processStatus = completed;
+                process[a].processDuration = 0;
+                shortestJobTime = 99999;
 
             }
 
@@ -176,15 +175,17 @@ void processManagement() {
                 break;
                 
             }
-
+            
             wrefresh(mainWindow);
 
         }
 
-            napms(1000);
-            mvwprintw(mainWindow, ymainWindow / 2, (xmainWindow / 2) + ((xmainWindow / 2) - strlen("Tempo restante: ") - 10), "Tempo restante: ");
-            wprintw(mainWindow, "%i", timePassed);
-            wrefresh(mainWindow);
+        napms(1000); 
+        process[shortestJobID].processDuration--;
+        mvwprintw(mainWindow, ymainWindow / 2, (xmainWindow / 2) + ((xmainWindow / 2) - strlen("Tempo restante: ") - 10), "Tempo restante: ");
+        wprintw(mainWindow, "%i", timePassed);
+        wrefresh(mainWindow);
+        timePassed++;
 
     }
 
