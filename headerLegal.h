@@ -17,18 +17,34 @@ typedef enum {executing, ready, waiting, completed}ProcessStatus;
 
 typedef struct {
 
+    int waitingTime;  //tempo de espera do processo
+    int responseTime;  //tempo de resposta do processo
+    char letter;  //letra q representa o processo
+    int arrivalTime;  //tempo de chegada
+    int processTime;  //segunda variável de duração do processo
+    int processDuration;  //duração do processo
+    int processStatus;  //status do processo
+
+}Process;
+
+Process *process = NULL;
+
+typedef struct {
+
     char letter;
     int arrivalTime;
     int processDuration;
     int processStatus;
+    int id;
 
-}Process;
+}SP;
 
 //functions
 void printFirstAnimation(int yTerminal, int xTerminal);
 void enterFolderName(int yTerminal, int xTerminal);
 void changeMainWindow(char *title);
 void processManagement();
+void executionReport();
 
 //variables
 int auxIntReading;

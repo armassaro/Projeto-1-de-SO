@@ -104,9 +104,10 @@ void enterFolderName(int yTerminal, int xTerminal) {
 
 void processManagement() {
 
-    Process *process = NULL;
+    process = NULL;
     int timePassed = 0;
     int timeMax = 0;
+    char *strAux = (char*) malloc(sizeof(char) * 30);
 
     changeMainWindow("| Gerenciamento de processos SJF |");
 
@@ -120,7 +121,10 @@ void processManagement() {
         fscanf(archive, "%i\n", &process[auxIntReading].processDuration);
         timeMax = timeMax + process[auxIntReading].processDuration;
 
+        process[auxIntReading].processTime = process[auxIntReading].processDuration;
         process[auxIntReading].processStatus = ready;
+        process[auxIntReading].waitingTime = 0;
+        process[auxIntReading].responseTime = 0;
 
         auxIntReading++;
 
@@ -128,44 +132,86 @@ void processManagement() {
 
     }
 
-    int shortestJobTime = 99999;
-    int shortestJobID;
+    SP shortestProcess;
+    shortestProcess.processDuration = 99999;
+    shortestProcess.id = -1;
     timePassed = 0;
 
-    while(timePassed <= timeMax) {
+    while(timePassed < timeMax) {
 
-        for(int a = 0; a < auxIntReading; a++) {  //checa todos os processos a cada segundo
+        SP shortestProcess;
+        shortestProcess.processDuration = 99999;
+        shortestProcess.id = -1;
+
+        for(int a = 0; a < auxIntReading; a++) {
+
+            if (process[a].processStatus != completed && process[a].arrivalTime <= timePassed && process[a].processDuration < shortestProcess.processDuration) {
+                
+                shortestProcess.processDuration = process[a].processDuration;
+                shortestProcess.id = a;
+                shortestProcess.letter = process[a].letter;
+                shortestProcess.arrivalTime = process[a].arrivalTime;
             
-            if(process[a].processStatus != completed && process[a].arrivalTime <= timePassed && process[a].processDuration < shortestJobTime) {  //decide qual processo será executado
-
-                process[a].processStatus = executing;
-                shortestJobTime = process[a].processDuration;
-                process[shortestJobID].processStatus = waiting;
-
-                shortestJobID = a;
-
             }
+        
+        }
 
-            if(process[a].processDuration <= 0 && process[a].processStatus != completed) {
+        for(int a = 0; a < auxIntReading; a++) {
+            
+            if (a == shortestProcess.id) {
+                
+                process[a].processStatus = executing;
+            
+            } else {
 
-                process[a].processStatus = completed;
-                process[a].processDuration = 0;
-                shortestJobTime = 99999;
+                if (process[a].processStatus != completed) {
+                    
+                    process[a].processStatus = waiting;
+                
+                }
 
+            } 
+
+        }
+
+        if (shortestProcess.id != -1) {
+
+            process[shortestProcess.id].processDuration--;
+
+            if(process[shortestProcess.id].processDuration <= 0) {
+
+                process[shortestProcess.id].processStatus = completed;
+                shortestProcess.processDuration = 99999;
+            
+            }
+        
+        }
+
+
+         for (int a = 0; a < auxIntReading; a++) {
+            
+            if (process[a].processStatus == ready) {
+
+                process[a].waitingTime++; // Incrementa o tempo de espera
+            
+            } else if (process[a].processStatus == waiting || process[a].processStatus == executing) {
+            
+                process[a].responseTime++; // Incrementa o tempo de resposta
+            
             }
 
             mvwprintw(mainWindow, 2 + a, 4, "[%c] -> Tempo de entrada %i | Duração %i ", process[a].letter, process[a].arrivalTime, process[a].processDuration);
-            
-            switch(process[a].processStatus) {
 
+            switch(process[a].processStatus) {
+                
                 case executing:
                 wprintw(mainWindow, "Executando");
                 break;
-
+                
                 case ready:
                 wprintw(mainWindow, "Pronto    ");
                 break;
-
+    
                 case waiting:
                 wprintw(mainWindow, "Em espera ");
                 break;
@@ -173,24 +219,91 @@ void processManagement() {
                 case completed:
                 wprintw(mainWindow, "Completo  ");
                 break;
-                
-            }
-            
-            wrefresh(mainWindow);
 
+            }
+        
         }
 
         napms(1000); 
-        process[shortestJobID].processDuration--;
-        mvwprintw(mainWindow, ymainWindow / 2, (xmainWindow / 2) + ((xmainWindow / 2) - strlen("Tempo restante: ") - 10), "Tempo restante: ");
-        wprintw(mainWindow, "%i", timePassed);
+        sprintf(strAux, "Tempo decorrido: %i", timePassed);
+        mvwprintw(mainWindow, 2, (xmainWindow / 2) - (strlen(strAux) / 2), strAux);
+        
         wrefresh(mainWindow);
         timePassed++;
 
     }
 
-}  
+    WINDOW *ShadowBox = newwin(3, (xTerminal - strlen("A execução dos processos foi concluída!")) / 2 + 2, (yTerminal - 3) / 2 + 1, (xTerminal - (xTerminal - strlen("A execução dos processos foi concluída!")) / 2 + 2) / 2 + 2);
+    wbkgd(ShadowBox, COLOR_PAIR(3));
+    wrefresh(ShadowBox);
 
+    WINDOW *forcedStopWindow = newwin(3, (xTerminal - strlen("A execução dos processos foi concluída!")) / 2 + 2, (yTerminal - 3) / 2, (xTerminal - (xTerminal - strlen("A execução dos processos foi concluída!")) / 2 + 2) / 2);
+    wbkgd(forcedStopWindow, COLOR_PAIR(2));
+    mvwprintw(forcedStopWindow, 1, 4, "A execução dos processos foi concluída!");
+    box(forcedStopWindow, 0, 0);
+    wrefresh(forcedStopWindow);
+    napms(4000);
+
+    wclear(ShadowBox);
+    wclear(forcedStopWindow);
+    delwin(ShadowBox);
+    delwin(forcedStopWindow);
+    free(strAux);
+
+}
+
+void executionReport() {
+
+    int auxInt = 0;
+
+    changeMainWindow("| Relatório de execução |");
+    wmove(mainWindow, 3, 4);
+    wprintw(mainWindow, "Linha do tempo = ");
+    wprintw(mainWindow, "[%i]", auxInt);
+
+    for(int a = 0; a < auxIntReading; a++) {
+
+        wprintw(mainWindow, "%c", process[a].letter);
+
+        for(int b = 0; b < process[a].processTime; b++) {
+
+            wprintw(mainWindow, "-");
+
+        }
+
+        auxInt = auxInt + process[a].processTime;
+
+        wprintw(mainWindow, "[%i]", auxInt);
+
+    }
+
+    wmove(mainWindow, 5, strlen("Tempo de resposta = ") + 4);
+
+    for(int a = 0; a < auxIntReading; a++) {
+
+        wprintw(mainWindow, "%c ", process[a].letter);
+
+    }
+    
+    mvwprintw(mainWindow, 6, 4, "Tempo de resposta   ");
+
+    for(int a = 0; a < auxIntReading; a++) {
+
+        wprintw(mainWindow, "%i ", process[a].responseTime);
+
+    }
+
+    mvwprintw(mainWindow, 7, 4, "Tempo de espera     ");
+
+    for(int a = 0; a < auxIntReading; a++) {
+
+        wprintw(mainWindow, "%i ", process[a].waitingTime);
+
+    }
+
+    wrefresh(mainWindow);
+
+}
 
 void changeMainWindow(char *title) {
 
@@ -222,6 +335,8 @@ int main() {
     enterFolderName(yTerminal, xTerminal);
 
     processManagement();
+
+    executionReport(process);
 
     getch();
 
