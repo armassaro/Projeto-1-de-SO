@@ -6,7 +6,7 @@ void printFirstAnimation(int yTerminal, int xTerminal) {
 
     attron(COLOR_PAIR(1));
 
-    for(int a = 0; a <= yTerminal; a++) { 
+    for(int a = 0; a <= yTerminal; a++) { //printa os blocos que fazem o efeito inicial
 
         for(int b = 0; b <= xTerminal; b++) {
 
@@ -21,14 +21,14 @@ void printFirstAnimation(int yTerminal, int xTerminal) {
 
     attroff(COLOR_PAIR(1));
     clear();
-    bkgd(COLOR_PAIR(1));
+    bkgd(COLOR_PAIR(1));  //comando responsável por colorir o plano de fundo da janela
     refresh();
 
 }
 
 void enterFolderName(int yTerminal, int xTerminal) {
 
-    init_color(COLOR_GREY, 179, 174, 162);
+    init_color(COLOR_GREY, 179, 174, 162);  //configura cor customizada por meio de rgb
     init_pair(2, COLOR_WHITE, COLOR_GREY);
     init_pair(3, COLOR_BLACK, COLOR_BLACK);
     
@@ -58,11 +58,11 @@ void enterFolderName(int yTerminal, int xTerminal) {
         echo();
         nocbreak();
         
-        wgetnstr(inputInfo, archiveName, 35);
+        wgetnstr(inputInfo, archiveName, 35);  //pega a string q representa o nome do arquivo
 
         archive = fopen(archiveName, "r");
 
-        if(strcmp(archiveName, "parar") == 0) {
+        if(strcmp(archiveName, "parar") == 0) {  //parada forçada do programa, caso o usuário digite "parar"
 
             werase(inputInfo);
             
@@ -92,7 +92,7 @@ void enterFolderName(int yTerminal, int xTerminal) {
 
         delwin(inputInfo);
 
-    }while(archive == NULL);
+    }while(archive == NULL);  //loop while q continua a dar loop enqunanto o ponteiro retornar nulo
 
     free(archiveName);
 
@@ -124,7 +124,7 @@ void processManagement() {
     process = (Process*) malloc(sizeof(Process));
     auxIntReading = 0;
 
-    while(feof(archive) == 0) {
+    while(feof(archive) == 0) {  //lê o arquivo e atribui os dados pra struct
 
         fscanf(archive, "%c ", &process[auxIntReading].letter);
         fscanf(archive, "%i ", &process[auxIntReading].arrivalTime);
@@ -147,7 +147,7 @@ void processManagement() {
     shortestProcess.id = -1;
     timePassed = 0;
 
-    while(timePassed < timeMax) {
+    while(timePassed < timeMax) {  //enquanto o tempo passado for menor q o tempo máximo, continua o loop
 
         SP shortestProcess;
         shortestProcess.processDuration = 99999;
@@ -198,7 +198,7 @@ void processManagement() {
         }
 
 
-         for (int a = 0; a < auxIntReading; a++) {
+         for (int a = 0; a < auxIntReading; a++) {  //loop q printa os estados dos processos
 
             mvwprintw(mainWindow, 4 + a, 4, "[%c] -> Tempo de entrada %i\t|\tDuração %i\t|\t", process[a].letter, process[a].arrivalTime, process[a].processDuration);
 
@@ -233,21 +233,23 @@ void processManagement() {
         }
 
         napms(1000);
-        for(int a = 0; a < auxIntReading; a++) {
+
+        for(int a = 0; a < auxIntReading; a++) {  //checa todos os processos pra verificar o tempo de espera e resposta
 
             if (process[a].processStatus == ready) {
 
-                process[a].waitingTime++; // Incrementa o tempo de espera
+                process[a].waitingTime++;
                 process[a].responseTime++;
             
             } else if (process[a].processStatus == waiting || process[a].processStatus == executing) {
             
-                process[a].responseTime++; // Incrementa o tempo de resposta
+                process[a].responseTime++; 
                 
             }
 
         }
-        sprintf(auxStr, "Tempo decorrido: %i", timePassed);
+
+        sprintf(auxStr, "Tempo decorrido: %i", timePassed);  //string q representa o tempo decorrido
         mvwprintw(mainWindow, 2, (xmainWindow / 2) - (strlen(auxStr) / 2), auxStr);
         
         wrefresh(mainWindow);
@@ -266,7 +268,7 @@ void processManagement() {
     wrefresh(forcedStopWindow);
     napms(4000);
 
-    wclear(ShadowBox);
+    wclear(ShadowBox);  //limpa as janelas e dados alocados para as janelas
     wclear(forcedStopWindow);
     delwin(ShadowBox);
     delwin(forcedStopWindow);
@@ -282,7 +284,7 @@ void executionReport() {
     wmove(mainWindow, 3, 4);
     wprintw(mainWindow, "Linha do tempo = ");
 
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //printa a linha de tempo
 
         wprintw(mainWindow, "[%i]%c", auxInt, process[a].letter);
 
@@ -298,11 +300,11 @@ void executionReport() {
 
     wprintw(mainWindow, "[%i]", auxInt);
 
-    wmove(mainWindow, 5, 4);
+    wmove(mainWindow, 5, 4);  //move o cursor dentro da janela
 
     wprintw(mainWindow, "Processos lidos:    ");
 
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q printa as letras dos processos lidos 
 
         wprintw(mainWindow, "%c\t", process[a].letter);
 
@@ -310,7 +312,7 @@ void executionReport() {
     
     mvwprintw(mainWindow, 6, 4, "Tempo de resposta:  ");
 
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q printa os tempos de resposta dos processos
 
         wprintw(mainWindow, "%i\t", process[a].responseTime);
 
@@ -318,16 +320,15 @@ void executionReport() {
 
     mvwprintw(mainWindow, 7, 4, "Tempo de espera:    ");
     
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q printa os tempos de chegada
 
-        auxInt = auxInt + process[a].arrivalTime;
         wprintw(mainWindow, "%i\t", process[a].waitingTime);
 
     }
 
     wmove(mainWindow, 9, 4);
     wprintw(mainWindow, "Processos lidos:    ");
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q printa as letras q representam os processos
 
         wprintw(mainWindow, "%c\t", process[a].letter);
 
@@ -335,7 +336,7 @@ void executionReport() {
 
     wmove(mainWindow, 10,4);
     wprintw(mainWindow, "Tempos de chegada:  ");
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q printa os tempos de chegada
 
         wprintw(mainWindow, "%i\t", process[a].arrivalTime);
 
@@ -343,7 +344,7 @@ void executionReport() {
 
     wmove(mainWindow, 11, 4);
     wprintw(mainWindow, "Tempos de duração:  ");
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q printa as durações dos processos
 
         wprintw(mainWindow, "%i\t", process[a].processTime);
 
@@ -352,22 +353,23 @@ void executionReport() {
     wmove(mainWindow, 13, 4);
     wprintw(mainWindow, "Tempo médio de espera: ");
     auxInt = 0;
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q calcula o tempo médio de espera
 
         auxInt = auxInt + process[a].waitingTime;
 
     }
-    auxInt /= auxIntReading;
+    auxInt = auxInt / auxIntReading;
+    wprintw(mainWindow, "%i", auxInt);
 
     wmove(mainWindow, 14, 4);
     wprintw(mainWindow, "Tempo médio de resposta: ");
     auxInt = 0;
-    for(int a = 0; a < auxIntReading; a++) {
+    for(int a = 0; a < auxIntReading; a++) {  //loop q calcula o  tempo médio de resposta;
 
-        auxInt = auxInt + process[a].waitingTime;
+        auxInt = auxInt + process[a].responseTime;
 
     }
-    auxInt /= auxIntReading;
+    auxInt = auxInt / auxIntReading;
     wprintw(mainWindow, "%i", auxInt);
 
     mvwprintw(mainWindow, 15, 4, "Tempo de duração de execução dos processos: %i", timeMax);
@@ -396,22 +398,22 @@ int main() {
     cbreak();  //faz com que a entrada que o usuário enviar para o programa seja imediatamente lida, sem necessidade de dar enter
     noecho();  //desabilita a visualização da entrada do teclado do usuário no terminal
     curs_set(FALSE);  //desabilita a visualização do cursor dentro do temrinal
-    start_color();
+    start_color();  //habilita as cores customizadas no ncurses
     setlocale(LC_ALL, "");
 
-    getmaxyx(stdscr, yTerminal, xTerminal);
+    getmaxyx(stdscr, yTerminal, xTerminal);  //consegue as dimensões do terminal sendo usado
 
     init_pair(2, COLOR_BLACK, COLOR_BLUE);
 
-    printFirstAnimation(yTerminal, xTerminal);
+    printFirstAnimation(yTerminal, xTerminal);  //mostra a primeira animação no início do progama
 
-    enterFolderName(yTerminal, xTerminal);
+    enterFolderName(yTerminal, xTerminal);  //coleta o nome do arquivo a ser lido
 
-    processManagement();
+    processManagement();  //gerenciamento de processos SJF preemptivo
 
-    executionReport(process);
+    executionReport();  //exibe relatório da execução dos processos em SJF
 
-    getch();
+    getch();  //solicita qlqr tecla pra continuar
 
     free(process);
 
