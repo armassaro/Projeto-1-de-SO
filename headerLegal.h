@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-typedef enum {executing, ready, waiting, completed}ProcessStatus;
+typedef enum {executing, ready, waiting, completed}ProcessStatus; //enum q representa os estados do processo
 
 typedef struct {
 
@@ -37,14 +37,14 @@ typedef struct {
     int processStatus;
     int id;
 
-}SP;
+}SP;  //SP = ShortestProcess, armazena as info do processo mais curto definido pelo código
 
 //functions
-void printFirstAnimation(int yTerminal, int xTerminal);
-void enterFolderName(int yTerminal, int xTerminal);
-void changeMainWindow(char *title);
-void processManagement();
-void executionReport();
+void printFirstAnimation(int yTerminal, int xTerminal);  //printa a primeira animação
+void enterFolderName(int yTerminal, int xTerminal);  //tela q recebe o nome do arquivo
+void changeMainWindow(char *title);  //limpa e troca o título da janela principal
+void processManagement();  //possui toda a lógica do SJF preemptivo
+void executionReport();  //retorna o relatório dos processos executados
 
 //variables
 int auxIntReading;
@@ -56,6 +56,7 @@ WINDOW *shadowBox;
 WINDOW *inputInfo;
 int yinputInfo, xinputInfo;
 FILE *archive;
+int timeMax;
 
 //color pairs info
 // COLOR_PAIR(1) = blue text, blue screen = terminal colors
